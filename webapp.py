@@ -94,6 +94,16 @@ def app(raw_request):
     return raw_response
 
 
+def wsgiapp(environ, start_response):
+    request = environ
+    view = dispatch(request)
+    status, headers, body = view(request)
+    if isinstance(body, str):
+        body = body.encode("utf-8")
+    start_response(status, headers)
+    return [body]
+
+
 def main():
     # IPv4, TCP通信のサーバソケット
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
