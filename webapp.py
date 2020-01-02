@@ -38,11 +38,26 @@ def make_response(status, headers, body):
 def view(request):
     if request["PATH_INFO"] == "/":
         body = """\
-        <html><body>
-          <h1>Hello World!</h1>
-        </body></html>
+        <html>
+          <head>
+            <link href="/static/style.css" rel="stylesheet">
+          </head>
+          <body>
+            <h1>Hello World!</h1>
+            <img src="/static/image.jpg">
+          </body>
+        </html>
         """
         resp = ("200 OK", [("Content-Type", "text/html")], body)
+
+    elif request["PATH_INFO"] == "/static/style.css":
+        headers = [("Content-Type", "text/css")]
+        resp = ("200 OK", headers, open("static/style.css", "rb").read())
+
+    elif request["PATH_INFO"] == "/static/image.jpg":
+        headers = [("Content-Type", "image/jpg")]
+        resp = ("200 OK", headers, open("static/image.jpg", "rb").read())
+
     else:
         resp = ("404 Not Found", [("Content-Type", "text/plain")], "NO PAGE")
     return resp  # (status str, headers List(tuple), content)
