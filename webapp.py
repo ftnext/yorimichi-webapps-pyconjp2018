@@ -1,9 +1,16 @@
+import random
 import socket
 
 
 def view(raw_request):
     print(raw_request)  # raw_requestはstrで受け取る
-    return "HTTP/1.1 501\r\n\r\nSorry\n"
+    resp_list = [
+        "HTTP/1.1 404 Not Found\r\n\r\nNo Page\n",
+        "HTTP/1.1 402 Payment Required\r\n\r\nOkane Choudai\n",
+        "HTTP/1.1 501 Not Implemented\r\n\r\nMada Dayo\n",
+    ]
+    resp = random.choice(resp_list)
+    return resp
 
 
 def main():
