@@ -1,14 +1,33 @@
 import socket
+from textwrap import dedent
 
 
-def view(raw_request):
-    print(raw_request)  # raw_requestはstrで受け取る
-    resp = """HTTP/1.1 200 OK
+def view(raw_request: str):
+    header, body = raw_request.split("\r\n\r\n", 1)  # 最初のCRLFで分割
+    print(header)
+    print(body)
+    headers = header.splitlines()  # headerを行で分割
+    # headers[0](リクエストライン) 例:GET /hoge HTTP/1.1 を分割
+    method, path, version = headers[0].split(" ", 2)
 
-    <html><body>
-      <h1>Hello World!</h1>
-    </body></html>
-    """  # HTMLがレスポンスペイロードとなり、ブラウザが解釈して表示
+    if path == "/":
+        resp = dedent(
+            """\
+            HTTP/1.1 200 OK
+
+            <html><body>
+              <h1>Hello World!</h1>
+            </body></html>
+            """
+        )  # HTMLがレスポンスペイロードとなり、ブラウザが解釈して表示
+    else:
+        resp = dedent(
+            """\
+            HTTP/1.1 404 Not Found
+
+            NO PAGE
+            """
+        )
     return resp
 
 
