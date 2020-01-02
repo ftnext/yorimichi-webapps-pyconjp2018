@@ -1,34 +1,60 @@
 import socket
-from textwrap import dedent
 
 
-def view(raw_request: str):
+def make_request(raw_request):
+    if isinstance(raw_request, bytes):
+        raw_request = raw_request.decode("utf-8")
+    # 以下、raw_requestはstr
+    print(raw_request)
     header, body = raw_request.split("\r\n\r\n", 1)  # 最初のCRLFで分割
-    print(header)
-    print(body)
     headers = header.splitlines()  # headerを行で分割
     # headers[0](リクエストライン) 例:GET /hoge HTTP/1.1 を分割
-    method, path, version = headers[0].split(" ", 2)
+    method, path, proto = headers[0].split(" ", 2)
+    request = {
+        "headers": headers[1:],
+        "body": body,
+        "REQUEST_METHOD": method,
+        "PATH_INFO": path,
+        "SERVER_PROTOCOL": proto,
+    }
+    return request
 
-    if path == "/":
-        resp = dedent(
-            """\
-            HTTP/1.1 200 OK
 
-            <html><body>
-              <h1>Hello World!</h1>
-            </body></html>
-            """
-        )  # HTMLがレスポンスペイロードとなり、ブラウザが解釈して表示
+def make_response(status, headers, body):
+    status_line = ("HTTP/1.1 " + status).encode("utf-8")
+    hl = []
+    for k, v in headers:
+        h = f"{k}: {v}"
+        hl.append(h)
+    header = ("\r\n".join(hl)).encode("utf-8")
+    if isinstance(body, str):
+        body = body.encode("utf-8")
+    # bytesのresponseを作って返す
+    raw_response = status_line + b"\r\n" + header + b"\r\n\r\n" + body
+    print(raw_response)
+    return raw_response
+
+
+def view(request):
+    if request["PATH_INFO"] == "/":
+        body = """\
+        <html><body>
+          <h1>Hello World!</h1>
+        </body></html>
+        """
+        resp = ("200 OK", [("Content-Type", "text/html")], body)
     else:
-        resp = dedent(
-            """\
-            HTTP/1.1 404 Not Found
+        resp = ("404 Not Found", [("Content-Type", "text/plain")], "NO PAGE")
+    return resp  # (status str, headers List(tuple), content)
 
-            NO PAGE
-            """
-        )
-    return resp
+
+def app(raw_request):
+    request = make_request(raw_request)
+    status, headers, body = view(request)
+    # if isinstance(body, str):  # make_responseの中にあるので重複
+    #     body = body.encode('utf-8')
+    raw_response = make_response(status, headers, body)
+    return raw_response
 
 
 def main():
@@ -49,8 +75,8 @@ def main():
                     raw_request += chunk
                     if len(chunk) < 4096:
                         break
-                raw_response = view(raw_request.decode("utf-8"))
-                conn.sendall(raw_response.encode("utf-8"))
+                raw_response = app(raw_request)
+                conn.sendall(raw_response)
 
 
 if __name__ == "__main__":
