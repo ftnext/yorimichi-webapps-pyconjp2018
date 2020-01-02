@@ -1,15 +1,14 @@
-import random
 import socket
 
 
 def view(raw_request):
     print(raw_request)  # raw_requestはstrで受け取る
-    resp_list = [
-        "HTTP/1.1 404 Not Found\r\n\r\nNo Page\n",
-        "HTTP/1.1 402 Payment Required\r\n\r\nOkane Choudai\n",
-        "HTTP/1.1 501 Not Implemented\r\n\r\nMada Dayo\n",
-    ]
-    resp = random.choice(resp_list)
+    resp = """HTTP/1.1 200 OK
+
+    <html><body>
+      <h1>Hello World!</h1>
+    </body></html>
+    """  # HTMLがレスポンスペイロードとなり、ブラウザが解釈して表示
     return resp
 
 
